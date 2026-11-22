@@ -29,6 +29,9 @@
             title="Move facility award numbers that were filed under NSF or other awards (for example 'NSF/CHE-2335833' or a bare '2335833') into the facility-award column">
       <i class="bi bi-award-fill me-1"></i>Re-check awards
     </button>
+    <a href="/journals" class="btn btn-outline-secondary btn-sm" title="Enter the official impact factors by hand">
+      <i class="bi bi-pencil-square me-1"></i>Journal impact factors
+    </a>
     <a href="/facility-awards" class="btn btn-outline-secondary btn-sm">
       <i class="bi bi-award me-1"></i>Facility awards ({{ n_awards }})
     </a>
@@ -212,11 +215,14 @@
             <td class="small">{{ p.type or '—' }}</td>
             <td class="small">{{ p.venue or '—' }}</td>
             {% set j = jif.get(p._jkey) %}
-            <td class="small text-end text-nowrap">{% if j and j.impact_factor is not none %}<span title="{{ 'OpenAlex 2-year mean citedness of ' ~ j.matched ~ ', ' ~ j.fetched if j.source == 'openalex' else 'Entered by hand' }}">{{ '%.2f' % j.impact_factor }}</span>{% else %}—{% endif %}</td>
+            <td class="small text-end text-nowrap">{% if j %}<span class="{{ 'fw-semibold' if j.official else '' }}" title="{{ j.title }}">{{ '%.2f' % j.value }}</span>{% else %}—{% endif %}</td>
             <td class="small text-nowrap">{{ p.facility_ack or '—' }}</td>
             <td class="small">{{ p.nsf_awards or '—' }}</td>
             <td class="small text-truncate" style="max-width:220px" title="{{ p.other_awards }}">{{ p.other_awards or '—' }}</td>
-            <td class="text-end"><a href="/publications/{{ p.id }}/edit" class="btn btn-outline-secondary btn-sm py-0" title="Edit"><i class="bi bi-pencil"></i></a></td>
+            <td class="text-end text-nowrap"><a href="/publications/{{ p.id }}/edit" class="btn btn-outline-secondary btn-sm py-0" title="Edit"><i class="bi bi-pencil"></i></a>
+              <button type="button" class="btn btn-outline-danger btn-sm py-0" title="Remove this publication (added by mistake)"
+                      hx-delete="/publications/{{ p.id }}" hx-target="closest tr" hx-swap="outerHTML"
+                      hx-confirm="Remove this publication from the list?&#10;&#10;{{ (p.title or p.doi or 'Untitled') | truncate(120) }}"><i class="bi bi-trash"></i></button></td>
           </tr>
         {% else %}
           <tr><td colspan="13" class="text-muted text-center py-4">No publications yet — add some above.</td></tr>

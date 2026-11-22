@@ -56,6 +56,58 @@ def _row(p: dict, awards: list[dict]) -> dict:
     return p
 
 
+def _jif_map() -> dict:
+    """journal key -> {value, title, official} for the Publications table."""
+    out = {}
+    for k, rec in pubs.impact_factors().items():
+        value, title = pubs.effective_if(rec)
+        if value is not None:
+            out[k] = {"value": value, "title": title, "official": title.startswith("Official")}
+    return out
+
+
+def _journal_rows() -> list[dict]:
+    """Every journal in the publication list (theses excluded) with its OpenAlex and official impact factor."""
+    metrics = pubs.impact_factors()
+    rows: dict[str, dict] = {}
+    for p in db.list_records(pubs.PUBS):
+        key = pubs.journal_key(p.get("venue"))
+        if not key or (p.get("type") or "").lower() == "thesis":
+            continue
+        r = rows.setdefault(key, {"key": key, "name": p["venue"].strip(), "papers": 0})
+        r["papers"] += 1
+    for key, r in rows.items():
+        m = metrics.get(key) or {}
+        official = m.get("official")
+        if official is None and m.get("source") == "manual":
+            official = m.get("impact_factor")
+        r.update(openalex=None if m.get("source") == "manual" and m.get("official") is None else m.get("impact_factor"),
+                 official=official, official_year=m.get("official_year", ""), matched=m.get("matched", ""), fetched=m.get("fetched", ""))
+    return sorted(rows.values(), key=lambda r: (-r["papers"], r["name"].lower()))
+
+
+@router.get("/journals", response_class=HTMLResponse)
+def journals_page(request: Request):
+    return templates.TemplateResponse("journals.html", {"request": request, "journals": _journal_rows()})
+
+
+@router.post("/journals/{key}", response_class=HTMLResponse)
+def journal_save(request: Request, key: str, official: str = Form(""), year: str = Form("")):
+    row = next((r for r in _journal_rows() if r["key"] == key), None)
+    if row is None:
+        raise HTTPException(404, "Journal not in the publication list")
+    txt = official.strip().replace(",", ".")
+    try:
+        value = float(txt) if txt else None
+    except ValueError:
+        raise HTTPException(422, "The impact factor must be a number")
+    if value is not None and not 0 <= value < 1000:
+        raise HTTPException(422, "The impact factor must be between 0 and 1000")
+    pubs.set_official_if(key, row["name"], value, year)
+    row = next(r for r in _journal_rows() if r["key"] == key)
+    return templates.TemplateResponse("partials/journal_row.html", {"request": request, "j": row})
+
+
 @router.get("/publications", response_class=HTMLResponse)
 def publications_page(request: Request, py: str = ""):
     awards = pubs.facility_awards()
@@ -68,7 +120,7 @@ def publications_page(request: Request, py: str = ""):
     return templates.TemplateResponse("publications.html", {
         "request": request, "pubs": rows, "py_sel": py_sel,
         "report_years": list(range(1, now_py + 1)), "report_default": max(1, now_py - 1),
-        "n_awards": len(awards), "jif": pubs.impact_factors(),
+        "n_awards": len(awards), "jif": _jif_map(),
     })
 
 
@@ -346,6 +398,15 @@ async def publication_analyze_text(pid: str, ack_paste: str = Form("")):
         pubs.ingest, {"doi": p.get("doi", ""), "title": p.get("title", ""), "authors": p.get("authors", ""),
                       "link_text": text}, "text", False, text)
     return RedirectResponse(f"/publications/{pid}/edit?saved=read", status_code=303)
+
+
+@router.delete("/publications/{pid}")
+def publication_delete_row(pid: str):
+    """Remove one publication from the table (an empty answer lets the page drop its row)."""
+    if db.get_record(pubs.PUBS, pid) is None:
+        raise HTTPException(404, "Publication not found")
+    db.delete_record(pubs.PUBS, pid)
+    return HTMLResponse("")
 
 
 @router.post("/publications/{pid}/delete")

@@ -856,6 +856,32 @@ def impact_factors() -> dict[str, dict]:
     return {r.get("key", ""): r for r in db.list_records(JOURNALS) if r.get("key")}
 
 
+def effective_if(rec: dict | None) -> tuple[float | None, str]:
+    """(value shown, where it comes from): the official value entered by hand, else OpenAlex's."""
+    if not rec:
+        return None, ""
+    official = rec.get("official")
+    if official is None and rec.get("source") == "manual":          # (records from the first version)
+        official = rec.get("impact_factor")
+    if official is not None:
+        yr = f" ({rec['official_year']})" if rec.get("official_year") else ""
+        return official, f"Official impact factor{yr}, entered by hand"
+    if rec.get("impact_factor") is not None:
+        return rec["impact_factor"], f"OpenAlex 2-year mean citedness of {rec.get('matched') or rec.get('name', '')}, {rec.get('fetched', '')}"
+    return None, ""
+
+
+def set_official_if(key: str, name: str, value: float | None, year: str = "") -> None:
+    """Enter (or, with None, clear) the official impact factor of a journal; OpenAlex's value is kept alongside."""
+    old = impact_factors().get(key)
+    rec = dict(old) if old else {"key": key, "name": name, "impact_factor": None, "source": "openalex", "fetched": ""}
+    if old and old.get("source") == "manual" and "official" not in old:
+        rec["official"], rec["impact_factor"], rec["source"] = old["impact_factor"], None, "openalex"
+    rec["official"] = value
+    rec["official_year"] = (year or "").strip() if value is not None else ""
+    db.save_record(JOURNALS, old["id"] if old else new_id(), rec)
+
+
 def ensure_impact_factor(venue: str) -> None:
     """Look the journal up once, when a publication from it is added (best effort)."""
     key = journal_key(venue)
@@ -869,7 +895,7 @@ def ensure_impact_factor(venue: str) -> None:
 
 
 def update_impact_factors() -> dict:
-    """Refresh the impact factor of every journal in the publication list (manual values are kept)."""
+    """Refresh OpenAlex's impact factor of every journal in the publication list (official values entered by hand are kept)."""
     have = impact_factors()
     out = {"journals": 0, "found": 0, "missing": [], "failed": 0}
     seen: set[str] = set()
@@ -879,8 +905,6 @@ def update_impact_factors() -> dict:
             continue
         seen.add(key)
         old = have.get(key)
-        if old and old.get("source") == "manual":
-            continue
         out["journals"] += 1
         try:
             rec = fetch_impact_factor(venue)
@@ -891,7 +915,10 @@ def update_impact_factors() -> dict:
             out["found"] += 1
         else:
             out["missing"].append(venue)
-        data = rec or {"key": key, "name": venue, "impact_factor": None, "source": "openalex", "fetched": date.today().isoformat()}
+        data = dict(old) if old else {"key": key, "name": venue}
+        if old and old.get("source") == "manual" and "official" not in old:       # (records from the first version)
+            data["official"] = old.get("impact_factor")
+        data.update(rec or {"impact_factor": None, "source": "openalex", "fetched": date.today().isoformat()})
         db.save_record(JOURNALS, old["id"] if old else new_id(), data)
         time.sleep(0.1)
     return out

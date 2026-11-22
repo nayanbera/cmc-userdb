@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Journal impact factors — APS ESAF Fetcher{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0"><i class="bi bi-graph-up me-1"></i>Journal impact factors</h4>
+  <a href="/publications" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Publications</a>
+</div>
+
+<p class="text-muted small">
+  The <em>Impact factor</em> column of the Publications list shows the <strong>official</strong> value entered here when there is one,
+  and otherwise OpenAlex's 2-year mean citedness (a free equivalent that can differ from the Clarivate JIF).
+  Type the official value from your Journal Citation Reports access and the year it is for; it is saved when you leave the box.
+  Empty the box to go back to OpenAlex's value. Theses are not listed.
+</p>
+
+<div class="d-flex align-items-center gap-2 mb-2">
+  <button class="btn btn-outline-secondary btn-sm" hx-post="/publications/update-impact-factors" hx-target="#journal-result"
+          hx-indicator="#journal-spin" hx-on::after-request="setTimeout(function(){ location.reload(); }, 1500)"
+          title="Refresh OpenAlex's value for every journal (official values stay)">
+    <i class="bi bi-arrow-repeat me-1"></i>Update from OpenAlex
+  </button>
+  <span id="journal-spin" class="htmx-indicator spinner-border spinner-border-sm"></span>
+  <span class="text-muted small">{{ journals | length }} journal(s)</span>
+</div>
+<div id="journal-result"></div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Journal</th><th class="text-end" title="Publications in the list">Papers</th><th class="text-end">OpenAlex</th>
+            <th>Official impact factor</th><th>Year</th><th>Shown</th></tr>
+      </thead>
+      <tbody>
+      {% for j in journals %}{% include "partials/journal_row.html" %}
+      {% else %}
+        <tr><td colspan="6" class="text-muted text-center py-4">No journals yet — add publications first.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
