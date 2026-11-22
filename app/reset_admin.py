@@ -13,6 +13,8 @@ import secrets
 import sys
 from pathlib import Path
 
+from app.config import DATA_DIR
+
 
 def _hash(pw: str) -> str:
     salt = secrets.token_bytes(16)
@@ -51,7 +53,7 @@ def _reset_mongo(uri: str, db_name: str, email: str, name: str, pw_hash: str) ->
 
 
 def main() -> None:
-    print("=== APS ESAF Fetcher — Emergency Admin Reset ===\n")
+    print("=== CMC UserDB — Emergency Admin Reset ===\n")
 
     email = input("Admin email: ").strip().lower()
     name  = input("Admin name: ").strip()
@@ -76,7 +78,7 @@ def main() -> None:
         print(f"\nUsing MongoDB backend ({db_name})")
         _reset_mongo(mongo_uri, db_name, email, name, pw_hash)
     else:
-        db_path = os.getenv("DB_PATH", str(Path.home() / ".aps-esaf-fetcher" / "esaf.db"))
+        db_path = os.getenv("DB_PATH", str(DATA_DIR / "esaf.db"))
         print(f"\nUsing SQLite backend ({db_path})")
         _reset_sqlite(db_path, email, name, pw_hash)
 

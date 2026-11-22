@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Start aps-esaf-fetcher under procServ (no root needed).
+# Start cmc-userdb under procServ (no root needed).
 # Adjust CONDA_PATH and INSTALL_DIR if different from defaults.
 
 set -euo pipefail
 
 SERVICE_USER="${USER}"
 CONDA_PATH="${HOME}/anaconda3"
-CONDA_ENV="aps-esaf-fetcher"
-INSTALL_DIR="${HOME}/aps-esaf-fetcher"
+CONDA_ENV="cmc-userdb"
+INSTALL_DIR="${HOME}/cmc-userdb"
 CTRL_PORT=60640   # procServ management port — choose a free port
-LOG_FILE=/tmp/aps-esaf-fetcher.log
-SECRETS="/etc/aps-esaf-fetcher/secrets.env"
+LOG_FILE=/tmp/cmc-userdb.log
+SECRETS="/etc/cmc-userdb/secrets.env"
 
 ENV_UVICORN="$CONDA_PATH/envs/$CONDA_ENV/bin/uvicorn"
 
@@ -19,7 +19,7 @@ ENV_UVICORN="$CONDA_PATH/envs/$CONDA_ENV/bin/uvicorn"
 
 exec procServ \
     --logfile "$LOG_FILE" \
-    --name aps-esaf-fetcher \
+    --name cmc-userdb \
     --noautorestart \
     "$CTRL_PORT" \
     "$ENV_UVICORN" app.main:app \

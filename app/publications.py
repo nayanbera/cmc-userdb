@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 PUBS, AWARDS = "publications", "facility_awards"
 _CROSSREF = "https://api.crossref.org/works/"
-_UA = {"User-Agent": "aps-esaf-fetcher (publication tracking)"}
+_UA = {"User-Agent": "cmc-userdb (publication tracking)"}
 
 # ---------------------------------------------------------------------------
 # DOIs

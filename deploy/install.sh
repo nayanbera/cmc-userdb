@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install aps-esaf-fetcher on the RE machine.
+# Install cmc-userdb on the RE machine.
 #
 # Usage (run from the repo root):
 #   sudo bash deploy/install.sh [chem_epics] [/home/chem_epics/anaconda3]
@@ -12,10 +12,10 @@ set -euo pipefail
 
 SERVICE_USER="${1:-chem_epics}"
 CONDA_PATH="${2:-/home/chem_epics/anaconda3}"
-CONDA_ENV="aps-esaf-fetcher"
-INSTALL_DIR="/home/${SERVICE_USER}/aps-esaf-fetcher"
-SECRETS_DIR="/etc/aps-esaf-fetcher"
-REPO_URL="https://github.com/nayanbera/aps-esaf-fetcher.git"
+CONDA_ENV="cmc-userdb"
+INSTALL_DIR="/home/${SERVICE_USER}/cmc-userdb"
+SECRETS_DIR="/etc/cmc-userdb"
+REPO_URL="https://github.com/nayanbera/cmc-userdb.git"
 
 # ── 1. Clone or update the repo ─────────────────────────────────────────────
 echo "==> Setting up code at $INSTALL_DIR"
@@ -52,7 +52,7 @@ mkdir -p "$SECRETS_DIR"
 if [ ! -f "$SECRETS_DIR/secrets.env" ]; then
     cp "$INSTALL_DIR/.env.example" "$SECRETS_DIR/secrets.env"
     # Point DB into the service user's home by default
-    sed -i "s|DB_PATH=.*|DB_PATH=/home/${SERVICE_USER}/.aps-esaf-fetcher/esaf.db|" \
+    sed -i "s|DB_PATH=.*|DB_PATH=/home/${SERVICE_USER}/.cmc-userdb/esaf.db|" \
         "$SECRETS_DIR/secrets.env"
     echo "  Created $SECRETS_DIR/secrets.env — fill in DM_USERNAME and DM_PASSWORD"
 fi
@@ -60,8 +60,8 @@ chmod 600 "$SECRETS_DIR/secrets.env"
 
 # ── 5. Patch and install systemd unit ────────────────────────────────────────
 echo "==> Installing systemd unit"
-UNIT_SRC="$INSTALL_DIR/deploy/aps-esaf-fetcher.service"
-UNIT_DST="/etc/systemd/system/aps-esaf-fetcher.service"
+UNIT_SRC="$INSTALL_DIR/deploy/cmc-userdb.service"
+UNIT_DST="/etc/systemd/system/cmc-userdb.service"
 
 # Substitute real paths into the unit file
 sed \
@@ -71,7 +71,7 @@ sed \
     "$UNIT_SRC" > "$UNIT_DST"
 
 systemctl daemon-reload
-systemctl enable aps-esaf-fetcher.service
+systemctl enable cmc-userdb.service
 
 echo ""
 echo "Done."
@@ -79,5 +79,5 @@ echo ""
 echo "Next steps:"
 echo "  1. Edit $SECRETS_DIR/secrets.env (DM_USERNAME, DM_PASSWORD, BEAMLINE_NAMES, …)"
 echo "  2. Install the dm conda package (see above)"
-echo "  3. sudo systemctl start aps-esaf-fetcher"
-echo "  4. sudo journalctl -fu aps-esaf-fetcher"
+echo "  3. sudo systemctl start cmc-userdb"
+echo "  4. sudo journalctl -fu cmc-userdb"

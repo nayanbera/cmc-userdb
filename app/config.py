@@ -7,11 +7,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _data_dir() -> Path:
+    """~/.cmc-userdb, or the pre-rename ~/.aps-esaf-fetcher when only that one exists (keeps existing data in use)."""
+    new, old = Path.home() / ".cmc-userdb", Path.home() / ".aps-esaf-fetcher"
+    return old if old.exists() and not new.exists() else new
+
+
+DATA_DIR: Path = _data_dir()
+
+
 def _load_secret_key() -> str:
     key = os.getenv("APP_SECRET_KEY", "").strip()
     if key:
         return key
-    _key_file = Path(os.getenv("DB_PATH", str(Path.home() / ".aps-esaf-fetcher" / "esaf.db"))).parent / ".session_secret"
+    _key_file = Path(os.getenv("DB_PATH", str(DATA_DIR / "esaf.db"))).parent / ".session_secret"
     if _key_file.exists():
         return _key_file.read_text().strip()
     key = secrets.token_hex(32)
@@ -46,10 +55,10 @@ def _parse_years() -> list[str]:
 SYNC_YEARS: list[str] = _parse_years()
 SYNC_INTERVAL_HOURS: int = int(os.getenv("SYNC_INTERVAL_HOURS", "24"))
 
-_default_db = str(Path.home() / ".aps-esaf-fetcher" / "esaf.db")
+_default_db = str(DATA_DIR / "esaf.db")
 DB_PATH: str = os.getenv("DB_PATH", _default_db)
 
-_default_pdf_dir = str(Path.home() / ".aps-esaf-fetcher" / "pdfs")
+_default_pdf_dir = str(DATA_DIR / "pdfs")
 PDF_DIR: str = os.getenv("PDF_DIR", _default_pdf_dir)
 
 # MongoDB — set MONGODB_URI to switch the backend; leave unset to use SQLite

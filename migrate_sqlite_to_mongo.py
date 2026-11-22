@@ -6,7 +6,7 @@ Usage:
 Environment variables:
     MONGODB_URI   MongoDB connection URI (required)
     MONGODB_ESAF_DB   Database name (default: aps_esaf)
-    DB_PATH       SQLite database path (default: ~/.aps-esaf-fetcher/esaf.db)
+    DB_PATH       SQLite database path (default: ~/.cmc-userdb/esaf.db)
 
 The script reads every table from SQLite via SQLiteESAFRepository and writes
 to MongoDB via MongoESAFRepository using the same public API methods — so all
@@ -25,6 +25,8 @@ import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+from app.config import DATA_DIR
 
 
 def _now() -> str:
@@ -346,7 +348,7 @@ def main():
 
     sqlite_path = (args.db
                    or os.getenv("DB_PATH")
-                   or str(Path.home() / ".aps-esaf-fetcher" / "esaf.db"))
+                   or str(DATA_DIR / "esaf.db"))
     mongo_uri   = os.getenv("MONGODB_URI", "")
     mongo_db    = os.getenv("MONGODB_ESAF_DB", "aps_esaf")
 

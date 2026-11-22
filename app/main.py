@@ -1,4 +1,4 @@
-"""aps-esaf-fetcher — FastAPI application entry point."""
+"""cmc-userdb — FastAPI application entry point."""
 
 import logging
 import threading
@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="APS ESAF Fetcher",
+    title="CMC UserDB",
     description="Fetch, store, and browse APS Experiment Safety Assessment Forms",
     version="1.0.0",
     lifespan=lifespan,

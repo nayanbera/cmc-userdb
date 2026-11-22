@@ -1,4 +1,4 @@
-# aps-esaf-fetcher
+# cmc-userdb
 
 A self-contained web service that fetches Experiment Safety Assessment Form (ESAF) data
 from the APS Data Management API, stores it in a local database, and exposes a
@@ -36,8 +36,8 @@ Supports **SQLite** (default, zero-config) and **MongoDB** (set `MONGODB_URI` to
 ## Quick start (development)
 
 ```bash
-git clone https://github.com/nayanbera/aps-esaf-fetcher.git
-cd aps-esaf-fetcher
+git clone https://github.com/nayanbera/cmc-userdb.git
+cd cmc-userdb
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env      # edit and fill in credentials
@@ -60,7 +60,7 @@ bash launch.sh
 | `ESAF_URL` | `<ESAF_SYSTEM_URL>?i_attrib={esaf_id}` | Link opened from the ESAF table and detail page (asks for the APS login, then opens the ESAF); `{esaf_id}` is replaced. Empty = no direct links |
 | `SYNC_YEARS` | current + previous year | Comma-separated years to sync (1998 – present supported) |
 | `SYNC_INTERVAL_HOURS` | `24` | Auto-sync interval (0 = disabled) |
-| `DB_PATH` | `~/.aps-esaf-fetcher/esaf.db` | SQLite database path (ignored when MongoDB is used) |
+| `DB_PATH` | `~/.cmc-userdb/esaf.db` | SQLite database path (ignored when MongoDB is used) |
 | `MONGODB_URI` | — | MongoDB connection URI; if set, MongoDB is used instead of SQLite |
 | `MONGODB_ESAF_DB` | `aps_esaf` | MongoDB database name (only used when `MONGODB_URI` is set) |
 | `HOST` | `0.0.0.0` | Bind host |
@@ -242,7 +242,7 @@ into a MongoDB database. Run it **before** switching `MONGODB_URI` in the servic
 # Dry run — counts rows, writes nothing
 python migrate_sqlite_to_mongo.py --dry-run
 
-# Full migration (default SQLite path: ~/.aps-esaf-fetcher/esaf.db)
+# Full migration (default SQLite path: ~/.cmc-userdb/esaf.db)
 export MONGODB_URI="mongodb://localhost:27017"
 export MONGODB_ESAF_DB="aps_esaf"   # optional, this is the default
 python migrate_sqlite_to_mongo.py
@@ -452,7 +452,7 @@ app/
     partials/                — HTMX swap targets
 static/                      — Minimal CSS overrides
 deploy/
-  aps-esaf-fetcher.service   — systemd unit
+  cmc-userdb.service   — systemd unit
   install.sh                 — one-shot install script
   procserv-start.sh          — procServ alternative (no root needed)
 migrate_sqlite_to_mongo.py   — One-shot SQLite → MongoDB migration script
@@ -487,16 +487,16 @@ each is a collection with the same fields as document keys.
 
 ```bash
 # On the server — sudo required for systemd steps
-git clone https://github.com/nayanbera/aps-esaf-fetcher.git
-cd aps-esaf-fetcher
+git clone https://github.com/nayanbera/cmc-userdb.git
+cd cmc-userdb
 
 sudo bash deploy/install.sh chem_epics /home/chem_epics/anaconda3
 
 # Fill in APS DM credentials (and optionally MONGODB_URI / MONGODB_ESAF_DB)
-sudo vi /etc/aps-esaf-fetcher/secrets.env
+sudo vi /etc/cmc-userdb/secrets.env
 
-sudo systemctl start aps-esaf-fetcher
-sudo journalctl -fu aps-esaf-fetcher
+sudo systemctl start cmc-userdb
+sudo journalctl -fu cmc-userdb
 ```
 
 ### procServ alternative (no root for the process)
@@ -509,10 +509,19 @@ bash deploy/procserv-start.sh
 
 ```bash
 git pull
-sudo systemctl restart aps-esaf-fetcher
+sudo systemctl restart cmc-userdb
 ```
 
 SQLite schema migrations run automatically on startup — no manual changes needed.
+
+### Existing install from before the rename (was `aps-esaf-fetcher`)
+
+Nothing breaks if you only `git pull` and restart: the app keeps using `~/.aps-esaf-fetcher/` (database, PDFs,
+session secret) when `~/.cmc-userdb/` does not exist, `MONGODB_ESAF_DB` still defaults to `aps_esaf`, and
+the old `aps-esaf-fetcher` systemd unit and `/etc/aps-esaf-fetcher/secrets.env` keep working.  The unit file
+shipped in `deploy/` is now `cmc-userdb.service`; to move to the new names, rename the data folder
+(`mv ~/.aps-esaf-fetcher ~/.cmc-userdb`, and update `DB_PATH` if you set it), `/etc/aps-esaf-fetcher` to
+`/etc/cmc-userdb`, and re-run `deploy/install.sh`.  Rename the GitHub repo in Settings; GitHub redirects the old URL.
 For MongoDB, indexes are (re-)created on every startup without side effects.
 
 ---

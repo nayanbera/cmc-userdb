@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}ESAFs — APS ESAF Fetcher{% endblock %}
+{% block title %}ESAFs — CMC UserDB{% endblock %}
 
 {% macro page_url(p) %}
 /esafs?page={{ p }}{% if filter_year %}&year={{ filter_year }}{% endif %}{% if filter_beamline %}&beamline={{ filter_beamline }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}{% if filter_search %}&search={{ filter_search }}{% endif %}

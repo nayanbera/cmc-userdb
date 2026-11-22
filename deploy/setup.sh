@@ -5,9 +5,9 @@
 set -euo pipefail
 
 CONDA_PATH="${1:-${HOME}/anaconda3}"
-CONDA_ENV="aps-esaf-fetcher"
-INSTALL_DIR="${HOME}/aps-esaf-fetcher"
-REPO_URL="https://github.com/nayanbera/aps-esaf-fetcher.git"
+CONDA_ENV="cmc-userdb"
+INSTALL_DIR="${HOME}/cmc-userdb"
+REPO_URL="https://github.com/nayanbera/cmc-userdb.git"
 
 CONDA_BIN="$CONDA_PATH/bin/conda"
 ENV_PIP="$CONDA_PATH/envs/$CONDA_ENV/bin/pip"

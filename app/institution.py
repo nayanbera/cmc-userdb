@@ -5,7 +5,7 @@ Three-layer lookup:
   2. _DOMAIN_MAP   — curated entries for national labs, DOE facilities, and
                      industry where the Hipo university DB has no entry.
   3. University DB — Hipo/university-domains-list (~10 k universities worldwide),
-                     fetched once and cached at ~/.aps-esaf-fetcher/university_domains.json.
+                     fetched once and cached at ~/.cmc-userdb/university_domains.json.
 
 lookup_by_email() checks the override map first, then the manual map, then
 the university DB.
@@ -17,6 +17,8 @@ import json
 import logging
 import threading
 from pathlib import Path
+
+from app.config import DATA_DIR
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +54,7 @@ _HIPO_URL = (
     "https://raw.githubusercontent.com/Hipo/university-domains-list"
     "/master/world_universities_and_domains.json"
 )
-_CACHE_PATH = Path.home() / ".aps-esaf-fetcher" / "university_domains.json"
+_CACHE_PATH = DATA_DIR / "university_domains.json"
 
 # US state full-name → abbreviation
 _US_STATE_ABBR: dict[str, str] = {
