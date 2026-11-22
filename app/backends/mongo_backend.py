@@ -722,10 +722,15 @@ class MongoESAFRepository(ESAFRepository):
         run_cycle: Optional[str] = None,
         limit: int = 200,
         offset: int = 0,
+        technique: Optional[str] = None,
     ) -> list[dict]:
         query: dict = {}
         if run_cycle:
             query["run_cycle"] = run_cycle
+        if technique == "none":
+            query["technique"] = {"$in": ["", None]}
+        elif technique:
+            query["technique"] = technique
         if search:
             query["$or"] = [
                 {"title":   {"$regex": search, "$options": "i"}},
@@ -756,10 +761,15 @@ class MongoESAFRepository(ESAFRepository):
         self,
         search: Optional[str] = None,
         run_cycle: Optional[str] = None,
+        technique: Optional[str] = None,
     ) -> int:
         query: dict = {}
         if run_cycle:
             query["run_cycle"] = run_cycle
+        if technique == "none":
+            query["technique"] = {"$in": ["", None]}
+        elif technique:
+            query["technique"] = technique
         if search:
             query["$or"] = [
                 {"title":   {"$regex": search, "$options": "i"}},

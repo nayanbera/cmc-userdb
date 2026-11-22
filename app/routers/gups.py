@@ -49,13 +49,14 @@ def gups_page(
     request: Request,
     search: str | None = None,
     run_cycle: str | None = None,
+    technique: str | None = None,
     page: int = 1,
 ):
     page   = max(1, page)
     offset = (page - 1) * _PER_PAGE
-    total  = db.count_gups(search=search, run_cycle=run_cycle)
+    total  = db.count_gups(search=search, run_cycle=run_cycle, technique=technique)
     pages  = max(1, (total + _PER_PAGE - 1) // _PER_PAGE)
-    gups   = db.list_gups(search=search, run_cycle=run_cycle, limit=_PER_PAGE, offset=offset)
+    gups   = db.list_gups(search=search, run_cycle=run_cycle, technique=technique, limit=_PER_PAGE, offset=offset)
     cycles = db.get_gup_run_cycles()
     return templates.TemplateResponse("gups.html", {
         "request":    request,
@@ -66,6 +67,7 @@ def gups_page(
         "search":     search or "",
         "run_cycle":  run_cycle or "",
         "run_cycles": cycles,
+        "technique":  technique or "",
         "import_cfg": {k: v for k, v in gup_import.load_settings().items() if k != "manifest"},
     })
 

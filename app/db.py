@@ -295,8 +295,9 @@ def list_gups(
     run_cycle: Optional[str] = None,
     limit: int = 200,
     offset: int = 0,
+    technique: Optional[str] = None,
 ) -> list[dict]:
-    return _r().list_gups(search=search, run_cycle=run_cycle, limit=limit, offset=offset)
+    return _r().list_gups(search=search, run_cycle=run_cycle, limit=limit, offset=offset, technique=technique)
 
 
 def get_gup(gup_id: str) -> Optional[dict]:
@@ -306,8 +307,9 @@ def get_gup(gup_id: str) -> Optional[dict]:
 def count_gups(
     search: Optional[str] = None,
     run_cycle: Optional[str] = None,
+    technique: Optional[str] = None,
 ) -> int:
-    return _r().count_gups(search=search, run_cycle=run_cycle)
+    return _r().count_gups(search=search, run_cycle=run_cycle, technique=technique)
 
 
 def upsert_gup(data: dict, now: str) -> str:

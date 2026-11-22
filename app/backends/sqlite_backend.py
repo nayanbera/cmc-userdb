@@ -1377,10 +1377,15 @@ class SQLiteESAFRepository(ESAFRepository):
         run_cycle: Optional[str] = None,
         limit: int = 200,
         offset: int = 0,
+        technique: Optional[str] = None,
     ) -> list[dict]:
         clauses, params = [], []
         if run_cycle:
             clauses.append("g.run_cycle = ?"); params.append(run_cycle)
+        if technique == "none":
+            clauses.append("COALESCE(g.technique, '') = ''")
+        elif technique:
+            clauses.append("g.technique = ?"); params.append(technique)
         if search:
             clauses.append(
                 "(g.title LIKE ? OR g.pi_name LIKE ? OR g.gup_id LIKE ?)"
@@ -1438,10 +1443,15 @@ class SQLiteESAFRepository(ESAFRepository):
         self,
         search: Optional[str] = None,
         run_cycle: Optional[str] = None,
+        technique: Optional[str] = None,
     ) -> int:
         clauses, params = [], []
         if run_cycle:
             clauses.append("run_cycle = ?"); params.append(run_cycle)
+        if technique == "none":
+            clauses.append("COALESCE(technique, '') = ''")
+        elif technique:
+            clauses.append("technique = ?"); params.append(technique)
         if search:
             clauses.append("(title LIKE ? OR pi_name LIKE ? OR gup_id LIKE ?)")
             params.extend([f"%{search}%"] * 3)
