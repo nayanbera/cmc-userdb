@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Start cmc-userdb under procServ (no root needed).
-# Adjust CONDA_PATH and INSTALL_DIR if different from defaults.
+# INSTALL_DIR defaults to the checkout this script is in (override: INSTALL_DIR=... bash deploy/procserv-start.sh).
 
 set -euo pipefail
 
 SERVICE_USER="${USER}"
 CONDA_PATH="${HOME}/anaconda3"
 CONDA_ENV="cmc-userdb"
-INSTALL_DIR="${HOME}/cmc-userdb"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INSTALL_DIR="${INSTALL_DIR:-$REPO_ROOT}"
 CTRL_PORT=60640   # procServ management port — choose a free port
 LOG_FILE=/tmp/cmc-userdb.log
 SECRETS="/etc/cmc-userdb/secrets.env"

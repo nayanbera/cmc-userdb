@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 # Run once as root (sudo) — installs the systemd unit and secrets file.
 # Everything else is already handled by deploy/setup.sh (run as chem_epics).
+#   sudo bash deploy/install-service.sh [chem_epics] [/home/chem_epics/anaconda3] [install-dir]
+# install-dir defaults to the checkout this script is run from.
 
 set -euo pipefail
 
 SERVICE_USER="${1:-chem_epics}"
 CONDA_PATH="${2:-/home/${SERVICE_USER}/anaconda3}"
 CONDA_ENV="cmc-userdb"
-INSTALL_DIR="/home/${SERVICE_USER}/cmc-userdb"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INSTALL_DIR="${3:-$REPO_ROOT}"
 SECRETS_DIR="/etc/cmc-userdb"
 ENV_UVICORN="$CONDA_PATH/envs/$CONDA_ENV/bin/uvicorn"
 

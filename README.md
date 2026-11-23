@@ -491,6 +491,12 @@ git clone https://github.com/nayanbera/cmc-userdb.git
 cd cmc-userdb
 
 sudo bash deploy/install.sh chem_epics /home/chem_epics/anaconda3
+```
+
+The scripts use the checkout they are run from as the install directory (so `/usr/local/epics/cmc-userdb` works as is).
+To use a different one, pass it as the last argument: `sudo bash deploy/install.sh chem_epics /home/chem_epics/anaconda3 /path/to/cmc-userdb`.
+
+```bash
 
 # Fill in APS DM credentials (and optionally MONGODB_URI / MONGODB_ESAF_DB)
 sudo vi /etc/cmc-userdb/secrets.env

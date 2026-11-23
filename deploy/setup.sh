@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # Run as chem_epics — no sudo needed.
 # Sets up the conda env and installs all dependencies.
+#   bash deploy/setup.sh [conda-path] [install-dir]
+# install-dir defaults to the checkout this script is run from.
 
 set -euo pipefail
 
 CONDA_PATH="${1:-${HOME}/anaconda3}"
 CONDA_ENV="cmc-userdb"
-INSTALL_DIR="${HOME}/cmc-userdb"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INSTALL_DIR="${2:-$REPO_ROOT}"
 REPO_URL="https://github.com/nayanbera/cmc-userdb.git"
 
 CONDA_BIN="$CONDA_PATH/bin/conda"

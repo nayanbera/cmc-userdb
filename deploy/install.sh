@@ -2,7 +2,11 @@
 # Install cmc-userdb on the RE machine.
 #
 # Usage (run from the repo root):
-#   sudo bash deploy/install.sh [chem_epics] [/home/chem_epics/anaconda3]
+#   sudo bash deploy/install.sh [chem_epics] [/home/chem_epics/anaconda3] [install-dir]
+#
+# install-dir defaults to the checkout this script is run from, so an existing
+# install (e.g. /usr/local/epics/cmc-userdb) is used in place instead of cloning
+# a second copy into the service user's home.
 #
 # The script must be run as root (sudo) so it can install the systemd unit
 # and create the secrets file under /etc/. Everything else is owned by the
@@ -13,7 +17,8 @@ set -euo pipefail
 SERVICE_USER="${1:-chem_epics}"
 CONDA_PATH="${2:-/home/chem_epics/anaconda3}"
 CONDA_ENV="cmc-userdb"
-INSTALL_DIR="/home/${SERVICE_USER}/cmc-userdb"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INSTALL_DIR="${3:-$REPO_ROOT}"
 SECRETS_DIR="/etc/cmc-userdb"
 REPO_URL="https://github.com/nayanbera/cmc-userdb.git"
 
